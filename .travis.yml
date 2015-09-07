@@ -1,0 +1,45 @@
+language: python
+python:
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "nightly"
+
+sudo: false
+addons:
+  apt:
+    packages:
+      - libglib2.0-dev
+      - libgtk-3-dev
+      - libffi-dev
+      - python3-dev
+      - gobject-introspection
+      - libgirepository1.0-dev
+      - python3-cairo-dev
+
+env:
+  global:
+    - GOBJECT_VERDIR=3.2
+    - GOBJECT_VERSION=3.2.2
+
+# command to install dependencies
+install: 
+  # These have to happen after the venv is activated
+  - export PKG_CONFIG_PATH=$VIRTUAL_ENV/lib/pkgconfig
+  - export PYTHON_INCLUDES=-I`echo $VIRTUAL_ENV/include/python3.*`
+
+  # Install PyGObject
+  - wget http://ftp.gnome.org/pub/GNOME/sources/pygobject/$GOBJECT_VERDIR/pygobject-$GOBJECT_VERSION.tar.xz
+  - tar xf pygobject-$GOBJECT_VERSION.tar.xz
+  - cd pygobject-$GOBJECT_VERSION
+  - ./configure --prefix=$VIRTUAL_ENV
+  - make
+  - make install
+  - cd ..
+
+  # Other PyPI dependencies
+  - python setup.py develop
+  - pip install -r test.reqs
+# command to run tests
+script:
+  - pytest
